@@ -1,8 +1,8 @@
 # PLATIVEZDE — Success
 
-Glass lowercase “success” grows into view and fills with green liquid. A finite shower of green 3D checkmarks falls from above, then fades. The waterline has overlapping waves and a translucent meniscus. Each letter has its own inset liquid volume, with counters preserved.
+Glass lowercase “success” grows into view and fills with green liquid. A finite shower of green paper confetti falls from above, then fades. The waterline has overlapping waves and a translucent meniscus. Each letter has its own inset liquid volume, with counters preserved.
 
-The word grows in 0.4 seconds, finishes filling at 1.7 seconds, and the scene settles at 3.2 seconds. Replay and theme buttons are preview controls. Reduced motion shows the completed word immediately without falling checks.
+The word grows in 0.4 seconds, finishes filling at 1.7 seconds, and the scene settles at 3.2 seconds. Replay and theme buttons are preview controls. Reduced motion shows the completed word immediately without falling confetti.
 
 ## Development
 
@@ -23,4 +23,4 @@ Figma history nodes: I1:11008;2:350 and I1:10966;96:4538 in qhOgTR3Z8vwlO90JR34F
 Three.js bundled Helvetiker Bold supplies the letter outlines. Assets are bundled locally; no external font request is required.
 The approved loader remains separately in Andrei35531/Loader.
 
-Bubbles reuse the loader's transparent sphere shader with a white Fresnel rim and crescent glint. Letter contours and holes constrain bubbles below the waterline. Falling checks have independently varied spawn times, heights, sizes, drift, depth and angular velocity.
+Bubbles reuse the loader's transparent sphere shader with a white Fresnel rim and crescent glint. Letter contours and holes constrain bubbles below the waterline. Confetti pieces have independently varied spawn times, heights, sizes, drift, depth and angular velocity.

@@ -65,7 +65,7 @@ for(const {geo,liquidGeo} of letters){
  const shell=new THREE.Mesh(geo,glass);shell.renderOrder=3;word.add(shell);
  word.add(new THREE.Mesh(liquidGeo,liquidMat));
 }
-// A finite shower of softly bevelled green checks falls above and around the word.
+// A finite shower of green confetti falls above and around the word.
 for(const points of contours){points.forEach(p=>{p.x-=center.x;p.y-=center.y;});const rim=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(points),rimMat);rim.renderOrder=4;word.add(rim);}
 
 // Reuse the loader's clear sphere, white Fresnel outline and crescent glint.
@@ -120,12 +120,12 @@ function updateBubbles(){for(const b of bubbles){
  b.mesh.visible=fade>0;b.mesh.position.set(x,y,z);b.mesh.scale.setScalar(b.radius);b.mesh.material.uniforms.uFade.value=fade;
 }}
 
-const checkShape=new THREE.Shape();[[-.5,0],[-.34,.16],[-.12,-.06],[.4,.46],[.56,.3],[-.12,-.38]].forEach(([x,y],i)=>i?checkShape.lineTo(x,y):checkShape.moveTo(x,y));checkShape.closePath();
-const checkGeo=new THREE.ExtrudeGeometry(checkShape,{depth:.07,bevelEnabled:true,bevelSegments:3,bevelSize:.025,bevelThickness:.025});checkGeo.center();
-const rain=Array.from({length:28},(_,i)=>{
+// Thin paper rectangles and short ribbons tumble independently.
+const confettiGeometries=[new THREE.BoxGeometry(.6,1,.018),new THREE.BoxGeometry(.85,.85,.018),new THREE.BoxGeometry(.35,1.35,.018)];
+const rain=Array.from({length:42},(_,i)=>{
  const mat=new THREE.MeshPhysicalMaterial({color:liquidColors.dark,roughness:.2,clearcoat:1,metalness:.05,transparent:true,depthWrite:false});
- const mesh=new THREE.Mesh(checkGeo,mat);scene.add(mesh);
- const scale=.075+random()*.13;mesh.scale.setScalar(scale);
+ const mesh=new THREE.Mesh(confettiGeometries[i%confettiGeometries.length],mat);scene.add(mesh);
+ const scale=.065+random()*.105;mesh.scale.setScalar(scale);
  return {mesh,x:(random()-.5)*(width+.8),delay:.08+random()*1.25,life:1.05+random()*.78,phase:random()*Math.PI*2,startY:1.65+random()*.8,drift:(random()-.5)*1.4,sway:.04+random()*.18,spin:(random()-.5)*6,tilt:(random()-.5)*1.8,z:(random()-.5)*.8};
 });
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');const duration=3.2;
