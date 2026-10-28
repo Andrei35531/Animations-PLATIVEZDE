@@ -1,8 +1,8 @@
 # PLATIVEZDE — Success concept
 
-A standalone Three.js glass checkmark matching the materials and themes of the approved loader.
+A Three.js success concept based on the supplied rotating luminous ring video, with a checkmark replacing the central dot.
 
-The 1.65-second sequence reveals a standalone bevelled glass checkmark with a small turn, gentle settling and a passing surface highlight. There is no coin, circular rim or liquid. It plays once and holds the completed state. Replay and theme buttons are preview controls. Reduced motion shows the final state immediately.
+The 3.2-second sequence turns a luminous blue ring with a transparent curved centre, stretches a liquid bridge from its lower edge and transitions the droplet into a green bevelled checkmark. It plays once and holds the completed state. Replay and theme buttons are preview controls. Reduced motion shows the final state immediately.
 
 ## Local development
 
@@ -22,4 +22,5 @@ npm run preview
 - Green references: history nodes I1:11008;2:350 and I1:10966;96:4538 in file qhOgTR3Z8vwlO90JR34Fus.
 
 This repository currently contains the success concept only. The approved loader remains in Andrei35531/Loader. No runtime accounts or external assets are required.
+
 
