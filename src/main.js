@@ -137,13 +137,13 @@ const crossShape=new THREE.Shape();
 const crossGeo=new THREE.ExtrudeGeometry(crossShape,{depth:.05,bevelEnabled:true,bevelSize:.018,bevelThickness:.018,bevelSegments:3});crossGeo.center();crossGeo.rotateZ(Math.PI/4);
 const rain=Array.from({length:42},(_,i)=>{
  const mat=new THREE.MeshPhysicalMaterial({color:liquidColors.dark,roughness:.2,clearcoat:1,metalness:.05,transparent:true,depthWrite:false});
- const mesh=new THREE.Mesh(label==='error'?crossGeo:confettiGeometries[i%confettiGeometries.length],mat);root.add(mesh);
+ const mesh=new THREE.Mesh(label==='Отказ'?crossGeo:confettiGeometries[i%confettiGeometries.length],mat);root.add(mesh);
  const scale=.065+random()*.105;mesh.scale.setScalar(scale);
  return {mesh,x:(random()-.5)*(width+.8),delay:.08+random()*1.25,life:1.05+random()*.78,phase:random()*Math.PI*2,startY:1.65+random()*.8,drift:(random()-.5)*1.4,sway:.04+random()*.18,spin:(random()-.5)*6,tilt:(random()-.5)*1.8,z:(random()-.5)*.8};
 });
 return {root,word,width,liquidColors,liquidMat,waterUniforms,rain,updateBubbles};
 }
-const variants={success:createAnimation('Успех',{light:0x16784a,dark:0x62d09a}),error:createAnimation('error',{light:0xd83242,dark:0xff6978})};
+const variants={success:createAnimation('Успех',{light:0x16784a,dark:0x62d09a}),error:createAnimation('Отказ',{light:0xd83242,dark:0xff6978})};
 let mode='success';variants.error.root.visible=false;
 let {word,width,liquidColors,liquidMat,waterUniforms,rain,updateBubbles}=variants.success;
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');const duration=3.2;
@@ -157,9 +157,9 @@ document.querySelector('#variant').onclick=()=>{
  ({word,width,liquidColors,liquidMat,waterUniforms,rain,updateBubbles}=variants[mode]);
  variants[mode].root.visible=true;rain.forEach(p=>p.mesh.visible=false);setTheme(lightTheme);resize();
  time=reducedMotion.matches?duration:0;
- document.querySelector('#variant').textContent=mode==='success'?'Error':'Успех';
- document.querySelector('main').setAttribute('aria-label',mode==='success'?'Успех: зелёная жидкость и конфетти':'Error: красная жидкость и крестики');
- document.title='PLATIVEZDE · '+(mode==='success'?'Успех':'Error');
+ document.querySelector('#variant').textContent=mode==='success'?'Отказ':'Успех';
+ document.querySelector('main').setAttribute('aria-label',mode==='success'?'Успех: зелёная жидкость и конфетти':'Отказ: красная жидкость и крестики');
+ document.title='PLATIVEZDE · '+(mode==='success'?'Успех':'Отказ');
 };
 function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-last)/1000,.05);last=now;if(reducedMotion.matches)time=duration;else if(!document.hidden)time=Math.min(duration,time+dt);
  const grow=1-Math.pow(1-THREE.MathUtils.clamp(time/.4,0,1),3);word.scale.setScalar(.12+.88*grow);

@@ -31,3 +31,5 @@ The Error/Success button switches between two scenes and replays the selected an
 The success scene now displays Успех, using a bundled Cyrillic subset of Droid Sans Bold with its NOTICE. The switch and accessible labels use Успех as well. Both words use equal spacing between actual glass bounds.
 
 Current typography: both 3D words use Inter Bold 4.1 from https://github.com/rsms/inter/releases/tag/v4.1, bundled as a local glyph subset with Inter-LICENSE.txt. This replaces Helvetiker and Droid mentioned above. Spacing measures facing contours at shared heights and includes bevel clearance, removing excess space after diagonal letters such as У.
+
+The error scene now displays Отказ, with matching switch labels, Inter Bold optical spacing, red liquid, bubbles and falling crosses.
