@@ -36,29 +36,32 @@ liquidMat.onBeforeCompile=shader=>{
  shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>','outgoingLight=mix(diffuseColor.rgb,outgoingLight,0.12); outgoingLight=mix(outgoingLight,mix(diffuseColor.rgb,vec3(1.0),0.72),meniscus*0.42);\n#include <opaque_fragment>');
 };
 // Individual letter cavities preserve spacing and the holes in the e.
+const letterGap=.065;
 let cursor=0;const letters=[];const cavities=[];
 for(const char of label){
  const shapes=font.generateShapes(char,.86);
  const geo=new THREE.ExtrudeGeometry(shapes,{depth:.22,bevelEnabled:true,bevelSegments:5,steps:1,bevelSize:.028,bevelThickness:.028,curveSegments:20});
  geo.computeBoundingBox();const box=geo.boundingBox;
  const cx=(box.min.x+box.max.x)/2,cy=(box.min.y+box.max.y)/2;
+ // Measure the actual glass outline, including its bevel, instead of font advance.
+ const offset=cursor-box.min.x,letterWidth=box.max.x-box.min.x;
  const liquidGeo=new THREE.ExtrudeGeometry(shapes,{depth:.12,bevelEnabled:true,bevelSegments:3,bevelSize:.008,bevelThickness:.008,curveSegments:20});
- liquidGeo.translate(-cx,-cy,-.06);liquidGeo.scale(.88,.88,1);liquidGeo.translate(cursor+cx,cy,0);
- geo.translate(cursor,0,-.11);
- cavities.push(...shapes.map(shape=>({outer:shape.getPoints(64).map(p=>[cursor+cx+(p.x-cx)*.88,cy+(p.y-cy)*.88]),holes:shape.holes.map(h=>h.getPoints(64).map(p=>[cursor+cx+(p.x-cx)*.88,cy+(p.y-cy)*.88]))})));
- letters.push({geo,liquidGeo});cursor+=font.data.glyphs[char].ha*.86/font.data.resolution+.035;
+ liquidGeo.translate(-cx,-cy,-.06);liquidGeo.scale(.88,.88,1);liquidGeo.translate(offset+cx,cy,0);
+ geo.translate(offset,0,-.11);
+ cavities.push(...shapes.map(shape=>({outer:shape.getPoints(64).map(p=>[offset+cx+(p.x-cx)*.88,cy+(p.y-cy)*.88]),holes:shape.holes.map(h=>h.getPoints(64).map(p=>[offset+cx+(p.x-cx)*.88,cy+(p.y-cy)*.88]))})));
+ letters.push({geo,liquidGeo,shapes,offset});cursor+=letterWidth+letterGap;
 }
 const totalBox=new THREE.Box3();for(const {geo} of letters){geo.computeBoundingBox();totalBox.union(geo.boundingBox);}
 const rimMat=new THREE.LineBasicMaterial({color:0xe3f5ff,transparent:true,opacity:.24,depthWrite:false});
-let rimCursor=0;const contours=[];
-for(const char of label){
- for(const shape of font.generateShapes(char,.86)){
+const contours=[];
+for(const {shapes,offset} of letters){
+ for(const shape of shapes){
   for(const curve of [shape,...shape.holes]){
-   const points=curve.getPoints(50).map(p=>new THREE.Vector3(p.x+rimCursor,p.y,.139));
+   const points=curve.getPoints(50).map(p=>new THREE.Vector3(p.x+offset,p.y,.139));
    contours.push(points);
   }
  }
- rimCursor+=font.data.glyphs[char].ha*.86/font.data.resolution+.035;
+
 }
 const center=totalBox.getCenter(new THREE.Vector3());const width=totalBox.max.x-totalBox.min.x;
 for(const {geo,liquidGeo} of letters){
