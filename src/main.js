@@ -1,3 +1,4 @@
+import russianFontData from './fonts/droid-sans-bold-ru.json';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import fontData from 'three/examples/fonts/helvetiker_bold.typeface.json';
 import * as THREE from 'three';
@@ -22,7 +23,7 @@ for(const [x,y,z,power] of [[-3,4,4,28],[4,2,-2,36]]){const l=new THREE.PointLig
 
 function createAnimation(label,liquidColors){
 const root=new THREE.Group();scene.add(root);const word=new THREE.Group();root.add(word);
-const font=new FontLoader().parse(fontData);
+const font=new FontLoader().parse(label==='Успех'?russianFontData:fontData);
 const glass=new THREE.MeshPhysicalMaterial({color:0xe5f0ff,roughness:.065,transmission:1,thickness:.24,ior:1.46,clearcoat:1,envMapIntensity:1.4,transparent:true,opacity:.25,depthWrite:false});
 
 const waterUniforms={level:{value:-.6},time:{value:0}};
@@ -137,7 +138,7 @@ const rain=Array.from({length:42},(_,i)=>{
 });
 return {root,word,width,liquidColors,liquidMat,waterUniforms,rain,updateBubbles};
 }
-const variants={success:createAnimation('success',{light:0x16784a,dark:0x62d09a}),error:createAnimation('error',{light:0xd83242,dark:0xff6978})};
+const variants={success:createAnimation('Успех',{light:0x16784a,dark:0x62d09a}),error:createAnimation('error',{light:0xd83242,dark:0xff6978})};
 let mode='success';variants.error.root.visible=false;
 let {word,width,liquidColors,liquidMat,waterUniforms,rain,updateBubbles}=variants.success;
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');const duration=3.2;
@@ -151,9 +152,9 @@ document.querySelector('#variant').onclick=()=>{
  ({word,width,liquidColors,liquidMat,waterUniforms,rain,updateBubbles}=variants[mode]);
  variants[mode].root.visible=true;rain.forEach(p=>p.mesh.visible=false);setTheme(lightTheme);resize();
  time=reducedMotion.matches?duration:0;
- document.querySelector('#variant').textContent=mode==='success'?'Error':'Success';
- document.querySelector('main').setAttribute('aria-label',mode==='success'?'Success: зелёная жидкость и конфетти':'Error: красная жидкость и крестики');
- document.title='PLATIVEZDE · '+(mode==='success'?'Success':'Error');
+ document.querySelector('#variant').textContent=mode==='success'?'Error':'Успех';
+ document.querySelector('main').setAttribute('aria-label',mode==='success'?'Успех: зелёная жидкость и конфетти':'Error: красная жидкость и крестики');
+ document.title='PLATIVEZDE · '+(mode==='success'?'Успех':'Error');
 };
 function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-last)/1000,.05);last=now;if(reducedMotion.matches)time=duration;else if(!document.hidden)time=Math.min(duration,time+dt);
  const grow=1-Math.pow(1-THREE.MathUtils.clamp(time/.4,0,1),3);word.scale.setScalar(.12+.88*grow);

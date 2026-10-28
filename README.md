@@ -27,3 +27,5 @@ Bubbles reuse the loader's transparent sphere shader with a white Fresnel rim an
 
 ## Error variant
 The Error/Success button switches between two scenes and replays the selected animation while preserving the theme. Error uses glass error lettering, red liquid (#D83242 light / #FF6978 dark), the same bubbles and falling bevelled crosses. These red values are concept colours, not verified Figma tokens. Both variants respect reduced motion.
+
+The success scene now displays Успех, using a bundled Cyrillic subset of Droid Sans Bold with its NOTICE. The switch and accessible labels use Успех as well. Both words use equal spacing between actual glass bounds.
