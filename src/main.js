@@ -20,10 +20,11 @@ scene.add(new THREE.HemisphereLight(0xc9e4ff,0x28384f,2));
 for(const [x,y,z,power] of [[-3,4,4,28],[4,2,-2,36]]){const l=new THREE.PointLight(0xd4e7ff,power);l.position.set(x,y,z);scene.add(l);}
 
 
-const word=new THREE.Group();scene.add(word);
+function createAnimation(label,liquidColors){
+const root=new THREE.Group();scene.add(root);const word=new THREE.Group();root.add(word);
 const font=new FontLoader().parse(fontData);
 const glass=new THREE.MeshPhysicalMaterial({color:0xe5f0ff,roughness:.065,transmission:1,thickness:.24,ior:1.46,clearcoat:1,envMapIntensity:1.4,transparent:true,opacity:.25,depthWrite:false});
-const liquidColors={light:0x16784a,dark:0x62d09a};
+
 const waterUniforms={level:{value:-.6},time:{value:0}};
 const liquidMat=new THREE.MeshPhysicalMaterial({color:liquidColors.dark,roughness:.16,clearcoat:.7,transmission:.06,thickness:.2,ior:1.333,envMapIntensity:.5,side:THREE.DoubleSide,toneMapped:false});
 liquidMat.onBeforeCompile=shader=>{
@@ -32,11 +33,11 @@ liquidMat.onBeforeCompile=shader=>{
  shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvLiquidPosition=position;');
  shader.fragmentShader='uniform float uLevel; uniform float uTime; varying vec3 vLiquidPosition;\n'+shader.fragmentShader;
  shader.fragmentShader=shader.fragmentShader.replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\nfloat wave=uLevel+0.026*sin(vLiquidPosition.x*7.0-uTime*8.0+vLiquidPosition.z*4.0)+0.011*sin(vLiquidPosition.x*17.0+uTime*11.0); if(vLiquidPosition.y>wave) discard; float meniscus=1.0-smoothstep(0.0,0.032,wave-vLiquidPosition.y);');
- shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>','outgoingLight=mix(diffuseColor.rgb,outgoingLight,0.12); outgoingLight=mix(outgoingLight,vec3(0.78,1.0,0.87),meniscus*0.42);\n#include <opaque_fragment>');
+ shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>','outgoingLight=mix(diffuseColor.rgb,outgoingLight,0.12); outgoingLight=mix(outgoingLight,mix(diffuseColor.rgb,vec3(1.0),0.72),meniscus*0.42);\n#include <opaque_fragment>');
 };
 // Individual letter cavities preserve spacing and the holes in the e.
 let cursor=0;const letters=[];const cavities=[];
-for(const char of 'success'){
+for(const char of label){
  const shapes=font.generateShapes(char,.86);
  const geo=new THREE.ExtrudeGeometry(shapes,{depth:.22,bevelEnabled:true,bevelSegments:5,steps:1,bevelSize:.028,bevelThickness:.028,curveSegments:20});
  geo.computeBoundingBox();const box=geo.boundingBox;
@@ -50,7 +51,7 @@ for(const char of 'success'){
 const totalBox=new THREE.Box3();for(const {geo} of letters){geo.computeBoundingBox();totalBox.union(geo.boundingBox);}
 const rimMat=new THREE.LineBasicMaterial({color:0xe3f5ff,transparent:true,opacity:.24,depthWrite:false});
 let rimCursor=0;const contours=[];
-for(const char of 'success'){
+for(const char of label){
  for(const shape of font.generateShapes(char,.86)){
   for(const curve of [shape,...shape.holes]){
    const points=curve.getPoints(50).map(p=>new THREE.Vector3(p.x+rimCursor,p.y,.139));
@@ -122,20 +123,39 @@ function updateBubbles(){for(const b of bubbles){
 
 // Thin paper rectangles and short ribbons tumble independently.
 const confettiGeometries=[new THREE.BoxGeometry(.6,1,.018),new THREE.BoxGeometry(.85,.85,.018),new THREE.BoxGeometry(.35,1.35,.018)];
+const crossShape=new THREE.Shape();
+[[-.5,-.16],[-.16,-.16],[-.16,-.5],[.16,-.5],[.16,-.16],[.5,-.16],[.5,.16],[.16,.16],[.16,.5],[-.16,.5],[-.16,.16],[-.5,.16]].forEach(([x,y],i)=>i?crossShape.lineTo(x,y):crossShape.moveTo(x,y));crossShape.closePath();
+const crossGeo=new THREE.ExtrudeGeometry(crossShape,{depth:.05,bevelEnabled:true,bevelSize:.018,bevelThickness:.018,bevelSegments:3});crossGeo.center();crossGeo.rotateZ(Math.PI/4);
 const rain=Array.from({length:42},(_,i)=>{
  const mat=new THREE.MeshPhysicalMaterial({color:liquidColors.dark,roughness:.2,clearcoat:1,metalness:.05,transparent:true,depthWrite:false});
- const mesh=new THREE.Mesh(confettiGeometries[i%confettiGeometries.length],mat);scene.add(mesh);
+ const mesh=new THREE.Mesh(label==='error'?crossGeo:confettiGeometries[i%confettiGeometries.length],mat);root.add(mesh);
  const scale=.065+random()*.105;mesh.scale.setScalar(scale);
  return {mesh,x:(random()-.5)*(width+.8),delay:.08+random()*1.25,life:1.05+random()*.78,phase:random()*Math.PI*2,startY:1.65+random()*.8,drift:(random()-.5)*1.4,sway:.04+random()*.18,spin:(random()-.5)*6,tilt:(random()-.5)*1.8,z:(random()-.5)*.8};
 });
+return {root,word,width,liquidColors,liquidMat,waterUniforms,rain,updateBubbles};
+}
+const variants={success:createAnimation('success',{light:0x16784a,dark:0x62d09a}),error:createAnimation('error',{light:0xd83242,dark:0xff6978})};
+let mode='success';variants.error.root.visible=false;
+let {word,width,liquidColors,liquidMat,waterUniforms,rain,updateBubbles}=variants.success;
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');const duration=3.2;
 let time=reducedMotion.matches?duration:0,last=performance.now(),lightTheme=false;
 function setTheme(light){lightTheme=light;document.body.classList.toggle('light',light);const color=light?liquidColors.light:liquidColors.dark;liquidMat.color.set(color);rain.forEach(p=>p.mesh.material.color.set(color));document.querySelector('#theme').textContent=light?'Тёмный фон':'Светлый фон';}
 setTheme(false);document.querySelector('#theme').onclick=()=>setTheme(!lightTheme);document.querySelector('#replay').onclick=()=>{time=reducedMotion.matches?duration:0;};reducedMotion.addEventListener('change',e=>{if(e.matches)time=duration;});
-new ResizeObserver(()=>{const {width:w,height:h}=host.getBoundingClientRect();renderer.setSize(w,h);camera.aspect=w/h;camera.position.set(0,.45,Math.max(7,(width+1.0)/(2*Math.tan(THREE.MathUtils.degToRad(17.5))*camera.aspect)));camera.lookAt(0,.05,0);camera.updateProjectionMatrix();}).observe(host);
-function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-last)/1000,.05);last=now;if(!document.hidden)time=Math.min(duration,time+dt);
+function resize(){const {width:w,height:h}=host.getBoundingClientRect();renderer.setSize(w,h);camera.aspect=w/h;camera.position.set(0,.45,Math.max(7,(width+1.0)/(2*Math.tan(THREE.MathUtils.degToRad(17.5))*camera.aspect)));camera.lookAt(0,.05,0);camera.updateProjectionMatrix();}
+new ResizeObserver(resize).observe(host);
+document.querySelector('#variant').onclick=()=>{
+ variants[mode].root.visible=false;mode=mode==='success'?'error':'success';
+ ({word,width,liquidColors,liquidMat,waterUniforms,rain,updateBubbles}=variants[mode]);
+ variants[mode].root.visible=true;rain.forEach(p=>p.mesh.visible=false);setTheme(lightTheme);resize();
+ time=reducedMotion.matches?duration:0;
+ document.querySelector('#variant').textContent=mode==='success'?'Error':'Success';
+ document.querySelector('main').setAttribute('aria-label',mode==='success'?'Success: зелёная жидкость и конфетти':'Error: красная жидкость и крестики');
+ document.title='PLATIVEZDE · '+(mode==='success'?'Success':'Error');
+};
+function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-last)/1000,.05);last=now;if(reducedMotion.matches)time=duration;else if(!document.hidden)time=Math.min(duration,time+dt);
  const grow=1-Math.pow(1-THREE.MathUtils.clamp(time/.4,0,1),3);word.scale.setScalar(.12+.88*grow);
  const fill=THREE.MathUtils.smoothstep(time,.35,1.7);waterUniforms.level.value=-.46+fill*.95;waterUniforms.time.value=time;
  for(const p of rain){const t=(time-p.delay)/p.life;p.mesh.visible=t>0&&t<1&&!reducedMotion.matches;if(!p.mesh.visible)continue;p.mesh.position.set(p.x+p.drift*t+p.sway*Math.sin(t*7+p.phase),p.startY-(p.startY+1.6)*(.3*t+.7*t*t),p.z+.12*Math.sin(t*6+p.phase));p.mesh.rotation.set(p.tilt+.45*Math.sin(t*6+p.phase),p.tilt+t*p.spin*.65,p.phase+t*p.spin);p.mesh.material.opacity=THREE.MathUtils.smoothstep(t,0,.12)*(1-THREE.MathUtils.smoothstep(t,.72,1));}
  updateBubbles();renderer.render(scene,camera);
 }requestAnimationFrame(frame);
+

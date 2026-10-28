@@ -24,3 +24,6 @@ Three.js bundled Helvetiker Bold supplies the letter outlines. Assets are bundle
 The approved loader remains separately in Andrei35531/Loader.
 
 Bubbles reuse the loader's transparent sphere shader with a white Fresnel rim and crescent glint. Letter contours and holes constrain bubbles below the waterline. Confetti pieces have independently varied spawn times, heights, sizes, drift, depth and angular velocity.
+
+## Error variant
+The Error/Success button switches between two scenes and replays the selected animation while preserving the theme. Error uses glass error lettering, red liquid (#D83242 light / #FF6978 dark), the same bubbles and falling bevelled crosses. These red values are concept colours, not verified Figma tokens. Both variants respect reduced motion.
