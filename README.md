@@ -1,8 +1,8 @@
 # PLATIVEZDE — Success
 
-A standalone glass checkmark that grows from small to full size in 0.35 seconds, then fills with green liquid. The full sequence finishes in 1.6 seconds and holds its final state. Replay and theme buttons are preview controls. Reduced motion shows the completed state immediately.
+Glass lowercase “success” grows into view and fills with green liquid. A finite shower of green 3D checkmarks falls from above, then fades. The waterline has overlapping waves and a translucent meniscus. Each letter has its own inset liquid volume, with counters preserved.
 
-The water reuses the loader's layered waves, translucent surface edge and glass bubbles. Its volume is constrained to the checkmark cavity. No ring, central dot or rotation.
+The word grows in 0.4 seconds, finishes filling at 1.7 seconds, and the scene settles at 3.2 seconds. Replay and theme buttons are preview controls. Reduced motion shows the completed word immediately without falling checks.
 
 ## Development
 
@@ -14,10 +14,11 @@ npm run dev -- --port 5174
 npm run build
 npm run preview
 
-## Figma palette
+## Palette
 
 Backgrounds: light #FFFFFF, dark #131313.
 Success liquid: light #16784A, dark #62D09A.
-References: history nodes I1:11008;2:350 and I1:10966;96:4538 in file qhOgTR3Z8vwlO90JR34Fus.
+Figma history nodes: I1:11008;2:350 and I1:10966;96:4538 in qhOgTR3Z8vwlO90JR34Fus.
 
-The approved loader remains in Andrei35531/Loader. No accounts or external assets are required at runtime.
+Three.js bundled Helvetiker Bold supplies the letter outlines. Assets are bundled locally; no external font request is required.
+The approved loader remains separately in Andrei35531/Loader.
