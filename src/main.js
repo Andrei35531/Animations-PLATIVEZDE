@@ -5,8 +5,8 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import './style.css';
 const host = document.querySelector('#scene');
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(35,1,.1,50);
-camera.position.set(0,.65,7.7); camera.lookAt(0,0,0);
+const camera = new THREE.OrthographicCamera(-3,3,2.2,-2.2,.1,50);
+camera.position.set(0,0,8); camera.lookAt(0,0,0);
 let renderer;
 try { renderer = new THREE.WebGLRenderer({antialias:true,alpha:true}); }
 catch { document.querySelector('#error').hidden=false; document.querySelector('#error').textContent='Для 3D-предпросмотра включите аппаратное ускорение браузера.'; throw new Error('WebGL unavailable'); }
@@ -23,7 +23,7 @@ for(const [x,y,z,power] of [[-3,4,4,28],[4,2,-2,36]]){const l=new THREE.PointLig
 function createAnimation(label,liquidColors){
 const root=new THREE.Group();scene.add(root);const word=new THREE.Group();root.add(word);
 const font=new FontLoader().parse(fontData);
-const glass=new THREE.MeshPhysicalMaterial({color:0xe5f0ff,roughness:.065,transmission:1,thickness:.24,ior:1.46,clearcoat:1,envMapIntensity:1.4,transparent:true,opacity:.25,depthWrite:false});
+const glass=new THREE.MeshPhysicalMaterial({color:0xe5f0ff,roughness:.065,transmission:1,thickness:.24,ior:1.46,clearcoat:.65,envMapIntensity:.8,transparent:true,opacity:.18,depthWrite:false});
 
 const waterUniforms={level:{value:-.6},time:{value:0}};
 const liquidMat=new THREE.MeshPhysicalMaterial({color:liquidColors.dark,roughness:.16,clearcoat:.7,transmission:.06,thickness:.2,ior:1.333,envMapIntensity:.5,side:THREE.DoubleSide,toneMapped:false});
@@ -43,40 +43,30 @@ function profile(shapes){const points=shapes.map(s=>s.getPoints(100));const rows
 let previousProfile=null,previousOffset=0;
 for(const char of label){
  const shapes=font.generateShapes(char,.86);
- const geo=new THREE.ExtrudeGeometry(shapes,{depth:.22,bevelEnabled:true,bevelSegments:5,steps:1,bevelSize:.028,bevelThickness:.028,curveSegments:20});
+ const geo=new THREE.ExtrudeGeometry(shapes,{depth:.22,bevelEnabled:true,bevelSegments:5,steps:1,bevelSize:.016,bevelThickness:.016,curveSegments:20});
  geo.computeBoundingBox();const box=geo.boundingBox;
  const cx=(box.min.x+box.max.x)/2,cy=(box.min.y+box.max.y)/2;
  // Measure the actual glass outline, including its bevel, instead of font advance.
  const currentProfile=profile(shapes);let offset=cursor-box.min.x;
- if(previousProfile){let separation=-Infinity;for(const [row,[left]] of currentProfile){const previous=previousProfile.get(row);if(previous)separation=Math.max(separation,previous[1]-left);}if(Number.isFinite(separation))offset=previousOffset+separation+letterGap+.056;}
+ if(previousProfile){let separation=-Infinity;for(const [row,[left]] of currentProfile){const previous=previousProfile.get(row);if(previous)separation=Math.max(separation,previous[1]-left);}if(Number.isFinite(separation))offset=previousOffset+separation+letterGap+.032;}
  previousProfile=currentProfile;previousOffset=offset;
  const letterWidth=box.max.x-box.min.x;
- const liquidGeo=new THREE.ExtrudeGeometry(shapes,{depth:.12,bevelEnabled:true,bevelSegments:3,bevelSize:.008,bevelThickness:.008,curveSegments:20});
- liquidGeo.translate(-cx,-cy,-.06);liquidGeo.scale(.88,.88,1);liquidGeo.translate(offset+cx,cy,0);
+ const liquidGeo=new THREE.ExtrudeGeometry(shapes,{depth:.12,bevelEnabled:false,curveSegments:20});
+ // Preserve the true contours and counters; scaling a whole glyph leaks into holes.
+ liquidGeo.translate(offset,0,-.06);
  geo.translate(offset,0,-.11);
- cavities.push(...shapes.map(shape=>({outer:shape.getPoints(64).map(p=>[offset+cx+(p.x-cx)*.88,cy+(p.y-cy)*.88]),holes:shape.holes.map(h=>h.getPoints(64).map(p=>[offset+cx+(p.x-cx)*.88,cy+(p.y-cy)*.88]))})));
+ cavities.push(...shapes.map(shape=>({outer:shape.getPoints(64).map(p=>[offset+p.x,p.y]),holes:shape.holes.map(h=>h.getPoints(64).map(p=>[offset+p.x,p.y]))})));
  letters.push({geo,liquidGeo,shapes,offset});cursor+=letterWidth+letterGap;
 }
 const totalBox=new THREE.Box3();for(const {geo} of letters){geo.computeBoundingBox();totalBox.union(geo.boundingBox);}
-const rimMat=new THREE.LineBasicMaterial({color:0xe3f5ff,transparent:true,opacity:.24,depthWrite:false});
-const contours=[];
-for(const {shapes,offset} of letters){
- for(const shape of shapes){
-  for(const curve of [shape,...shape.holes]){
-   const points=curve.getPoints(50).map(p=>new THREE.Vector3(p.x+offset,p.y,.139));
-   contours.push(points);
-  }
- }
-
-}
 const center=totalBox.getCenter(new THREE.Vector3());const width=totalBox.max.x-totalBox.min.x;
+const fillBounds=new THREE.Box3();
 for(const {geo,liquidGeo} of letters){
  geo.translate(-center.x,-center.y,0);liquidGeo.translate(-center.x,-center.y,0);
  const shell=new THREE.Mesh(geo,glass);shell.renderOrder=3;word.add(shell);
+ liquidGeo.computeBoundingBox();fillBounds.union(liquidGeo.boundingBox);
  word.add(new THREE.Mesh(liquidGeo,liquidMat));
 }
-// A finite shower of green confetti falls above and around the word.
-for(const points of contours){points.forEach(p=>{p.x-=center.x;p.y-=center.y;});const rim=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(points),rimMat);rim.renderOrder=4;word.add(rim);}
 
 // Reuse the loader's clear sphere, white Fresnel outline and crescent glint.
 let seed=8317;function random(){seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;}
@@ -141,20 +131,20 @@ const rain=Array.from({length:42},(_,i)=>{
  const scale=.065+random()*.105;mesh.scale.setScalar(scale);
  return {mesh,x:(random()-.5)*(width+.8),delay:.08+random()*1.25,life:1.05+random()*.78,phase:random()*Math.PI*2,startY:1.65+random()*.8,drift:(random()-.5)*1.4,sway:.04+random()*.18,spin:(random()-.5)*6,tilt:(random()-.5)*1.8,z:(random()-.5)*.8};
 });
-return {root,word,width,liquidColors,liquidMat,waterUniforms,rain,updateBubbles};
+return {root,word,width,fillBounds,liquidColors,liquidMat,waterUniforms,rain,updateBubbles};
 }
 const variants={success:createAnimation('Успех',{light:0x16784a,dark:0x62d09a}),error:createAnimation('Отказ',{light:0xd83242,dark:0xff6978})};
 let mode='success';variants.error.root.visible=false;
-let {word,width,liquidColors,liquidMat,waterUniforms,rain,updateBubbles}=variants.success;
+let {word,width,fillBounds,liquidColors,liquidMat,waterUniforms,rain,updateBubbles}=variants.success;
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');const duration=3.2;
 let time=reducedMotion.matches?duration:0,last=performance.now(),lightTheme=false;
 function setTheme(light){lightTheme=light;document.body.classList.toggle('light',light);const color=light?liquidColors.light:liquidColors.dark;liquidMat.color.set(color);rain.forEach(p=>p.mesh.material.color.set(color));document.querySelector('#theme').textContent=light?'Тёмный фон':'Светлый фон';}
 setTheme(false);document.querySelector('#theme').onclick=()=>setTheme(!lightTheme);document.querySelector('#replay').onclick=()=>{time=reducedMotion.matches?duration:0;};reducedMotion.addEventListener('change',e=>{if(e.matches)time=duration;});
-function resize(){const {width:w,height:h}=host.getBoundingClientRect();renderer.setSize(w,h);camera.aspect=w/h;camera.position.set(0,.45,Math.max(7,(width+1.0)/(2*Math.tan(THREE.MathUtils.degToRad(17.5))*camera.aspect)));camera.lookAt(0,.05,0);camera.updateProjectionMatrix();}
+function resize(){const {width:w,height:h}=host.getBoundingClientRect();renderer.setSize(w,h);const aspect=w/h,halfHeight=Math.max(2.2,(width+1.0)/(2*aspect));camera.left=-halfHeight*aspect;camera.right=halfHeight*aspect;camera.top=halfHeight;camera.bottom=-halfHeight;camera.updateProjectionMatrix();}
 new ResizeObserver(resize).observe(host);
 document.querySelector('#variant').onclick=()=>{
  variants[mode].root.visible=false;mode=mode==='success'?'error':'success';
- ({word,width,liquidColors,liquidMat,waterUniforms,rain,updateBubbles}=variants[mode]);
+ ({word,width,fillBounds,liquidColors,liquidMat,waterUniforms,rain,updateBubbles}=variants[mode]);
  variants[mode].root.visible=true;rain.forEach(p=>p.mesh.visible=false);setTheme(lightTheme);resize();
  time=reducedMotion.matches?duration:0;
  document.querySelector('#variant').textContent=mode==='success'?'Отказ':'Успех';
@@ -163,7 +153,7 @@ document.querySelector('#variant').onclick=()=>{
 };
 function frame(now){requestAnimationFrame(frame);const dt=Math.min((now-last)/1000,.05);last=now;if(reducedMotion.matches)time=duration;else if(!document.hidden)time=Math.min(duration,time+dt);
  const grow=1-Math.pow(1-THREE.MathUtils.clamp(time/.4,0,1),3);word.scale.setScalar(.12+.88*grow);
- const fill=THREE.MathUtils.smoothstep(time,.35,1.7);waterUniforms.level.value=-.46+fill*.95;waterUniforms.time.value=time;
+ const fill=THREE.MathUtils.smoothstep(time,.35,1.7);waterUniforms.level.value=THREE.MathUtils.lerp(fillBounds.min.y-.06,fillBounds.max.y+.06,fill);waterUniforms.time.value=time;
  for(const p of rain){const t=(time-p.delay)/p.life;p.mesh.visible=t>0&&t<1&&!reducedMotion.matches;if(!p.mesh.visible)continue;p.mesh.position.set(p.x+p.drift*t+p.sway*Math.sin(t*7+p.phase),p.startY-(p.startY+1.6)*(.3*t+.7*t*t),p.z+.12*Math.sin(t*6+p.phase));p.mesh.rotation.set(p.tilt+.45*Math.sin(t*6+p.phase),p.tilt+t*p.spin*.65,p.phase+t*p.spin);p.mesh.material.opacity=THREE.MathUtils.smoothstep(t,0,.12)*(1-THREE.MathUtils.smoothstep(t,.72,1));}
  updateBubbles();renderer.render(scene,camera);
 }requestAnimationFrame(frame);

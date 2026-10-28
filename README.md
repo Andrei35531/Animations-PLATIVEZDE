@@ -33,3 +33,5 @@ The success scene now displays Успех, using a bundled Cyrillic subset of Dr
 Current typography: both 3D words use Inter Bold 4.1 from https://github.com/rsms/inter/releases/tag/v4.1, bundled as a local glyph subset with Inter-LICENSE.txt. This replaces Helvetiker and Droid mentioned above. Spacing measures facing contours at shared heights and includes bevel clearance, removing excess space after diagonal letters such as У.
 
 The error scene now displays Отказ, with matching switch labels, Inter Bold optical spacing, red liquid, bubbles and falling crosses.
+
+Front-view update: an orthographic camera removes perspective and tilt. Explicit outline strokes are removed. Liquid uses the true glyph contours, preserving counters instead of shrinking entire letters. The fill range comes from actual liquid bounds with wave clearance, so both words start empty and fill completely.
