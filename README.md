@@ -1,26 +1,23 @@
-# PLATIVEZDE — Success concept
+# PLATIVEZDE — Success
 
-A Three.js success concept based on the supplied rotating luminous ring video, with a checkmark replacing the central dot.
+A standalone glass checkmark that grows from small to full size in 0.35 seconds, then fills with green liquid. The full sequence finishes in 1.6 seconds and holds its final state. Replay and theme buttons are preview controls. Reduced motion shows the completed state immediately.
 
-The 3.2-second sequence turns a luminous blue ring with a transparent curved centre, stretches a liquid bridge from its lower edge and transitions the droplet into a green bevelled checkmark. It plays once and holds the completed state. Replay and theme buttons are preview controls. Reduced motion shows the final state immediately.
+The water reuses the loader's layered waves, translucent surface edge and glass bubbles. Its volume is constrained to the checkmark cavity. No ring, central dot or rotation.
 
-## Local development
+## Development
 
 npm ci
 npm run dev -- --port 5174
 
-## Production build
+## Build
 
 npm run build
 npm run preview
 
-## Figma colours
+## Figma palette
 
-- Light background: #FFFFFF; dark background: #131313.
-- CTA blue: light #1473E6, dark #579CFF.
-- Success green: light #16784A, dark #62D09A.
-- Green references: history nodes I1:11008;2:350 and I1:10966;96:4538 in file qhOgTR3Z8vwlO90JR34Fus.
+Backgrounds: light #FFFFFF, dark #131313.
+Success liquid: light #16784A, dark #62D09A.
+References: history nodes I1:11008;2:350 and I1:10966;96:4538 in file qhOgTR3Z8vwlO90JR34Fus.
 
-This repository currently contains the success concept only. The approved loader remains in Andrei35531/Loader. No runtime accounts or external assets are required.
-
-
+The approved loader remains in Andrei35531/Loader. No accounts or external assets are required at runtime.
