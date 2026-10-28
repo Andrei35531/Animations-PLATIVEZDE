@@ -1,8 +1,8 @@
 # PLATIVEZDE — Success concept
 
-A standalone Three.js success animation matching the approved glass coin loader.
+A standalone Three.js glass checkmark matching the materials and themes of the approved loader.
 
-The 2.1-second sequence completes a coin turn, fills and settles the water, transitions from CTA blue to success green, reveals a bevelled glass checkmark and sweeps a highlight along the rim. It plays once and holds the completed state. Replay and theme buttons are preview controls. Reduced motion shows the final state immediately.
+The 1.65-second sequence reveals a standalone bevelled glass checkmark with a small turn, gentle settling and a passing surface highlight. There is no coin, circular rim or liquid. It plays once and holds the completed state. Replay and theme buttons are preview controls. Reduced motion shows the final state immediately.
 
 ## Local development
 
@@ -22,3 +22,4 @@ npm run preview
 - Green references: history nodes I1:11008;2:350 and I1:10966;96:4538 in file qhOgTR3Z8vwlO90JR34Fus.
 
 This repository currently contains the success concept only. The approved loader remains in Andrei35531/Loader. No runtime accounts or external assets are required.
+
