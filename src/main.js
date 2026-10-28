@@ -1,6 +1,5 @@
-import russianFontData from './fonts/droid-sans-bold-ru.json';
+import fontData from './fonts/inter-bold.json';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
-import fontData from 'three/examples/fonts/helvetiker_bold.typeface.json';
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import './style.css';
@@ -23,7 +22,7 @@ for(const [x,y,z,power] of [[-3,4,4,28],[4,2,-2,36]]){const l=new THREE.PointLig
 
 function createAnimation(label,liquidColors){
 const root=new THREE.Group();scene.add(root);const word=new THREE.Group();root.add(word);
-const font=new FontLoader().parse(label==='Успех'?russianFontData:fontData);
+const font=new FontLoader().parse(fontData);
 const glass=new THREE.MeshPhysicalMaterial({color:0xe5f0ff,roughness:.065,transmission:1,thickness:.24,ior:1.46,clearcoat:1,envMapIntensity:1.4,transparent:true,opacity:.25,depthWrite:false});
 
 const waterUniforms={level:{value:-.6},time:{value:0}};
@@ -39,13 +38,19 @@ liquidMat.onBeforeCompile=shader=>{
 // Individual letter cavities preserve spacing and the holes in the e.
 const letterGap=.065;
 let cursor=0;const letters=[];const cavities=[];
+// Compare facing contours at the same height: diagonal letters need optical spacing.
+function profile(shapes){const points=shapes.map(s=>s.getPoints(100));const rows=new Map();for(let row=-250;row<=750;row++){const y=row*.002,xs=[];for(const polygon of points)for(let i=0;i<polygon.length;i++){const a=polygon[i],b=polygon[(i+1)%polygon.length];if((a.y>y)!==(b.y>y))xs.push(a.x+(b.x-a.x)*(y-a.y)/(b.y-a.y));}if(xs.length)rows.set(row,[Math.min(...xs),Math.max(...xs)]);}return rows;}
+let previousProfile=null,previousOffset=0;
 for(const char of label){
  const shapes=font.generateShapes(char,.86);
  const geo=new THREE.ExtrudeGeometry(shapes,{depth:.22,bevelEnabled:true,bevelSegments:5,steps:1,bevelSize:.028,bevelThickness:.028,curveSegments:20});
  geo.computeBoundingBox();const box=geo.boundingBox;
  const cx=(box.min.x+box.max.x)/2,cy=(box.min.y+box.max.y)/2;
  // Measure the actual glass outline, including its bevel, instead of font advance.
- const offset=cursor-box.min.x,letterWidth=box.max.x-box.min.x;
+ const currentProfile=profile(shapes);let offset=cursor-box.min.x;
+ if(previousProfile){let separation=-Infinity;for(const [row,[left]] of currentProfile){const previous=previousProfile.get(row);if(previous)separation=Math.max(separation,previous[1]-left);}if(Number.isFinite(separation))offset=previousOffset+separation+letterGap+.056;}
+ previousProfile=currentProfile;previousOffset=offset;
+ const letterWidth=box.max.x-box.min.x;
  const liquidGeo=new THREE.ExtrudeGeometry(shapes,{depth:.12,bevelEnabled:true,bevelSegments:3,bevelSize:.008,bevelThickness:.008,curveSegments:20});
  liquidGeo.translate(-cx,-cy,-.06);liquidGeo.scale(.88,.88,1);liquidGeo.translate(offset+cx,cy,0);
  geo.translate(offset,0,-.11);
