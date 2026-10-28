@@ -22,3 +22,5 @@ Figma history nodes: I1:11008;2:350 and I1:10966;96:4538 in qhOgTR3Z8vwlO90JR34F
 
 Three.js bundled Helvetiker Bold supplies the letter outlines. Assets are bundled locally; no external font request is required.
 The approved loader remains separately in Andrei35531/Loader.
+
+Bubbles reuse the loader's transparent sphere shader with a white Fresnel rim and crescent glint. Letter contours and holes constrain bubbles below the waterline. Falling checks have independently varied spawn times, heights, sizes, drift, depth and angular velocity.
